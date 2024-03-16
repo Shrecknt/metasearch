@@ -57,6 +57,8 @@ pub async fn run() {
             }),
         )
         .route("/settings", get(settings::route))
+        .route("/block_site", get(settings::block_route))
+        .route("/unblock_site", get(settings::unblock_route))
         .route("/opensearch.xml", get(opensearch::route))
         .route("/search", get(search::route))
         .route("/autocomplete", get(autocomplete::route));
@@ -92,7 +94,27 @@ where
             blocked_domains_str
                 .split(',')
                 .map(|domain| domain.trim().to_string())
+                .filter(|domain| !domain.is_empty())
                 .collect()
         })
         .unwrap_or_default()
+}
+
+pub fn set_blocked_domains<B>(blocked_domains: B) -> String
+where
+    B: IntoIterator<Item = String>,
+{
+    let mut first_iter = true;
+    let mut built_string = String::new();
+    for domain in blocked_domains.into_iter() {
+        if first_iter {
+            first_iter = false;
+        } else {
+            built_string.push(',');
+        }
+        built_string.push_str(&domain);
+    }
+    use base64::prelude::*;
+    let blocked_domains_base64 = BASE64_STANDARD.encode(built_string);
+    format!("blocked={blocked_domains_base64}")
 }

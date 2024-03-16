@@ -124,6 +124,11 @@ fn render_results(response: Response, blocked_domains: &HashSet<String>) -> Stri
                 if blocked_domains.contains(domain) {
                     continue;
                 }
+                if let Some(domain) = domain.strip_prefix("www.") {
+                    if blocked_domains.contains(domain) {
+                        continue;
+                    }
+                }
             }
         }
         html.push_str(&render_search_result(result));

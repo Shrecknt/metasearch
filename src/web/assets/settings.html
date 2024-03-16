@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="/style.css">
     <script src="/settings.js" defer></script>
     <link rel="search" type="application/opensearchdescription+xml" title="metasearch" href="/opensearch.xml" />
+    <style>
+        .block-site-form, .unblock-site-form {
+            padding: 0;
+            margin: 0;
+        }
+        .block-site-form {
+            margin-top: 6px;
+        }
+    </style>
 </head>
 
 <body>
@@ -19,9 +28,9 @@
             <div class="blocked-sites">
                 %blocked-sites%
             </div>
-            <form action="/block_site" method="post" class="block-site-form">
-                <input type="text" name="domain" placeholder="example.com" id="block-site-input" autocomplete="off">
-                <input type="submit" value="Block">
+            <form action="/block_site" method="get" enctype="application/x-www-form-urlencoded" class="block-site-form">
+                <input type="text" name="return" value="/settings" style="display:none;">
+                <input type="text" name="domain" placeholder="example.com" id="block-site-input" autocomplete="off"><input type="submit" value="Block">
             </form>
         </fieldset>
     </div>
