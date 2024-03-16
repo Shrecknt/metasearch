@@ -19,7 +19,7 @@ use crate::engines::{
 
 use super::get_blocked_domains;
 
-fn render_beginning_of_html(query: &str) -> String {
+fn render_beginning_of_html(query: &str, include_scholarly: bool) -> String {
     format!(
         r#"<!DOCTYPE html>
 <html lang="en">
@@ -34,14 +34,16 @@ fn render_beginning_of_html(query: &str) -> String {
 <body>
     <div class="results-container">
     <main>
-    <form action="/search" method="get" class="search-form">
+    <form action="/search" method="get" enctype="application/x-www-form-urlencoded" class="search-form">
+        <input type="checkbox" name="scholarly" name="search-scholarly-checkbox" {scholarly_toggle}>
         <input type="text" name="q" placeholder="Search" value="{}" id="search-input" autofocus onfocus="this.select()" autocomplete="off">
         <input type="submit" value="Search">
     </form>
     <div class="progress-updates">
 "#,
         encode_text(query),
-        encode_unquoted_attribute(query)
+        encode_unquoted_attribute(query),
+        scholarly_toggle = if include_scholarly { "checked" } else { "" }
     )
 }
 
@@ -51,7 +53,12 @@ fn render_end_of_html() -> String {
 
 fn render_engine_list(engines: &[engines::Engine]) -> String {
     let mut html = String::new();
+    let mut first_iter = true;
     for engine in engines {
+        if !first_iter {
+            html.push_str(" &middot; ");
+        }
+        first_iter = false;
         html.push_str(&format!(
             r#"<span class="engine-list-item">{engine}</span>"#,
             engine = encode_text(&engine.id())
@@ -146,6 +153,9 @@ fn render_engine_progress_update(
         EngineProgressUpdate::Downloading => "downloading",
         EngineProgressUpdate::Parsing => "parsing",
         EngineProgressUpdate::Done => "<span class=\"progress-update-done\">done</span>",
+        EngineProgressUpdate::Skipping => {
+            "<span class=\"progress-update-skipping\">skipping</span>"
+        }
     };
 
     format!(r#"<span class="progress-update-time">{time_ms:>4}ms</span> {engine} {message}"#)
@@ -158,6 +168,8 @@ pub async fn route(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
 ) -> impl IntoResponse {
     let blocked_domains = get_blocked_domains::<HashSet<_>>(&cookies);
+
+    let include_scholarly = params.get("scholarly").map(|v| v.to_lowercase()) == Some("on".into());
 
     let query = params
         .get("q")
@@ -206,7 +218,7 @@ pub async fn route(
         // 2) the results
         // 3) the post-search infobox (usually not sent) + the end of the html
 
-        let first_part = render_beginning_of_html(&query);
+        let first_part = render_beginning_of_html(&query, include_scholarly);
         // second part is in the loop
         let mut third_part = String::new();
 
@@ -214,7 +226,7 @@ pub async fn route(
 
         let (progress_tx, mut progress_rx) = tokio::sync::mpsc::unbounded_channel();
 
-        let search_future = tokio::spawn(async move { engines::search(query, progress_tx).await });
+        let search_future = tokio::spawn(async move { engines::search(query, include_scholarly, progress_tx).await });
 
         while let Some(progress_update) = progress_rx.recv().await {
             match progress_update.data {

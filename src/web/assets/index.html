@@ -12,7 +12,8 @@
 <body>
     <div class="main-container">
         <h1>metasearch</h1>
-        <form action="/search" method="get" class="search-form">
+        <form action="/search" method="get" enctype="application/x-www-form-urlencoded" class="search-form">
+            <input type="checkbox" name="scholarly" name="search-scholarly-checkbox">
             <input type="text" name="q" placeholder="Search" id="search-input" autofocus onfocus="this.select()" autocomplete="off">
             <input type="submit" value="Search">
         </form>

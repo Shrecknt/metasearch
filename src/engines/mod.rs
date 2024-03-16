@@ -14,8 +14,8 @@ use tokio::sync::mpsc;
 
 mod macros;
 use crate::{
-    engine_autocomplete_requests, engine_postsearch_requests, engine_requests, engine_weights,
-    engines,
+    engine_autocomplete_requests, engine_postsearch_requests, engine_requests, engine_scholarly,
+    engine_weights, engines,
 };
 
 pub mod answer;
@@ -28,6 +28,7 @@ engines! {
     Bing = "bing",
     Brave = "brave",
     Marginalia = "marginalia",
+    GoogleScholar = "scholar",
     // answer
     Useragent = "useragent",
     Ip = "ip",
@@ -44,15 +45,26 @@ engines! {
 
 engine_weights! {
     Google = 1.05,
+    GoogleScholar = 2.0,
     Bing = 1.0,
     Brave = 1.25,
     Marginalia = 0.15,
     // defaults to 1.0
 }
 
+engine_scholarly! {
+    Google = false,
+    GoogleScholar = true,
+    Bing = false,
+    Brave = false,
+    Marginalia = false,
+    // defaults to false
+}
+
 engine_requests! {
     // search
     Google => search::google::request, parse_response,
+    GoogleScholar => search::google_scholar::request, parse_response,
     Bing => search::bing::request, parse_response,
     Brave => search::brave::request, parse_response,
     Marginalia => search::marginalia::request, parse_response,
@@ -193,6 +205,7 @@ pub enum EngineProgressUpdate {
     Downloading,
     Parsing,
     Done,
+    Skipping,
 }
 
 #[derive(Debug)]
@@ -223,12 +236,24 @@ impl ProgressUpdate {
 pub async fn search_with_engines(
     engines: &[Engine],
     query: &SearchQuery,
+    include_scholarly: bool,
     progress_tx: mpsc::UnboundedSender<ProgressUpdate>,
 ) -> eyre::Result<()> {
     let start_time = Instant::now();
 
     let mut requests = Vec::new();
     for engine in engines {
+        if !include_scholarly && engine.is_scholarly() {
+            let engine = *engine;
+            progress_tx.send(ProgressUpdate::new(
+                ProgressUpdateData::Engine {
+                    engine,
+                    update: EngineProgressUpdate::Skipping,
+                },
+                start_time,
+            ))?;
+            continue;
+        }
         requests.push(async {
             let engine = *engine;
 
@@ -419,10 +444,11 @@ pub static CLIENT: Lazy<reqwest::Client> = Lazy::new(|| {
 
 pub async fn search(
     query: SearchQuery,
+    include_scholarly: bool,
     progress_tx: mpsc::UnboundedSender<ProgressUpdate>,
 ) -> eyre::Result<()> {
     let engines = Engine::all();
-    search_with_engines(engines, &query, progress_tx).await
+    search_with_engines(engines, &query, include_scholarly, progress_tx).await
 }
 
 pub async fn autocomplete(query: &str) -> eyre::Result<Vec<String>> {

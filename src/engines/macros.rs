@@ -35,6 +35,20 @@ macro_rules! engine_weights {
 }
 
 #[macro_export]
+macro_rules! engine_scholarly {
+    ($($engine:ident = $is_scholarly:expr),* $(,)?) => {
+        impl Engine {
+            pub fn is_scholarly(&self) -> bool {
+                match self {
+                    $(Engine::$engine => $is_scholarly,)*
+                    _ => false,
+                }
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! engine_parse_response {
     ($res:ident, $module:ident::$engine_id:ident::None) => {
         None

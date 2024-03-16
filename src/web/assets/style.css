@@ -171,6 +171,10 @@ h1 {
   color: #7fd962;
   font-weight: bold;
 }
+.progress-update-skipping {
+  color: #d96262;
+  font-weight: bold;
+}
 
 /* answer */
 .answer {
