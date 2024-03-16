@@ -1,6 +1,7 @@
 pub mod autocomplete;
 pub mod opensearch;
 pub mod search;
+pub mod settings;
 
 use std::net::SocketAddr;
 
@@ -16,6 +17,15 @@ pub async fn run() {
                 (
                     [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
                     include_str!("assets/index.html"),
+                )
+            }),
+        )
+        .route(
+            "/settings.js",
+            get(|| async {
+                (
+                    [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+                    include_str!("assets/settings.js"),
                 )
             }),
         )
@@ -46,6 +56,7 @@ pub async fn run() {
                 )
             }),
         )
+        .route("/settings", get(settings::route))
         .route("/opensearch.xml", get(opensearch::route))
         .route("/search", get(search::route))
         .route("/autocomplete", get(autocomplete::route));
@@ -59,4 +70,29 @@ pub async fn run() {
     )
     .await
     .unwrap();
+}
+
+pub fn get_blocked_domains<B>(cookies: &axum_extra::extract::cookie::CookieJar) -> B
+where
+    B: FromIterator<String> + Default,
+{
+    use base64::prelude::*;
+
+    cookies
+        .get("blocked")
+        .map(|cookie| {
+            let cookie_value = cookie.value();
+            // 500 kb block list limit
+            if cookie_value.len() > 500000 {
+                return Default::default();
+            }
+            let blocked_domains_base64 = BASE64_STANDARD.decode(cookie_value).unwrap_or_default();
+            let blocked_domains_str =
+                std::str::from_utf8(&blocked_domains_base64).unwrap_or_default();
+            blocked_domains_str
+                .split(',')
+                .map(|domain| domain.trim().to_string())
+                .collect()
+        })
+        .unwrap_or_default()
 }

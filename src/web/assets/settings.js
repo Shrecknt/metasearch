@@ -1,0 +1,1 @@
+console.log("settings has js :D");

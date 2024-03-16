@@ -1,0 +1,30 @@
+<!-- source code: https://https://git.matdoes.dev/mat/metasearch2 -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>settings - metasearch</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/settings.js" defer></script>
+    <link rel="search" type="application/opensearchdescription+xml" title="metasearch" href="/opensearch.xml" />
+</head>
+
+<body>
+    <div class="main-container">
+        <h1>settings</h1>
+        <fieldset>
+            <legend>Blocked Sites</legend>
+            <div class="blocked-sites">
+                %blocked-sites%
+            </div>
+            <form action="/block_site" method="post" class="block-site-form">
+                <input type="text" name="domain" placeholder="example.com" id="block-site-input" autocomplete="off">
+                <input type="submit" value="Block">
+            </form>
+        </fieldset>
+    </div>
+</body>
+
+</html>

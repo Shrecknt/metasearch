@@ -1,5 +1,7 @@
 a cute metasearch engine
 
+a fork of [mrcbax/metasearch2/seo_spam](https://github.com/mrcbax/metasearch2/tree/seo_spam) which is a branch of [mrcbax/metasearch2](https://github.com/mrcbax/metasearch2) which is a fork of [mat-1/metasearch2](https://github.com/mat-1/metasearch2).
+
 it sources from google, bing, brave, and a few others.
 
 there's a demo instance at https://s.matdoes.dev, but don't use it as your

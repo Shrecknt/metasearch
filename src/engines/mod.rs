@@ -35,6 +35,7 @@ engines! {
     Wikipedia = "wikipedia",
     Dictionary = "dictionary",
     Timezone = "timezone",
+    Notepad = "notepad",
     // post-search
     StackExchange = "stackexchange",
     GitHub = "github",
@@ -62,6 +63,7 @@ engine_requests! {
     Wikipedia => answer::wikipedia::request, parse_response,
     Dictionary => answer::dictionary::request, parse_response,
     Timezone => answer::timezone::request, None,
+    Notepad => answer::notepad::request, None,
 }
 
 engine_autocomplete_requests! {
@@ -473,7 +475,6 @@ fn merge_engine_responses(responses: HashMap<Engine, EngineResponse>) -> Respons
 
     for (engine, response) in responses {
         for (result_index, search_result) in response.search_results.into_iter().enumerate() {
-
             // position 1 has a score of 1, position 2 has a score of 0.5, position 3 has a
             // score of 0.33, etc.
             let base_result_score = 1. / (result_index + 1) as f64;
@@ -568,15 +569,33 @@ pub struct AutocompleteResult {
 
 fn filter_spam(url: &str) -> bool {
     let spam_list = vec![
-        "forgeeks", "quora", "yahoo", "tecmint",
-        "alternativeto", "hackerearth", "linuxgenie",
-        "codeofcode", "tecadmin", "dev.to",
-        "linuxconfig.org", "linuxtechi", "nixcraft",
-        "learnitguide", "howtogeek", "techrepublic",
-        "codeopolis", "technoyard", "techreviews",
-        "simplilearn", "linuxize", "cyberciti",
-        "savvyit", "sitepoint", "phoenixnap",
-        "devconnected", "wpdiaries"
+        "forgeeks",
+        "quora",
+        "yahoo",
+        "tecmint",
+        "alternativeto",
+        "hackerearth",
+        "linuxgenie",
+        "codeofcode",
+        "tecadmin",
+        "dev.to",
+        "linuxconfig.org",
+        "linuxtechi",
+        "nixcraft",
+        "learnitguide",
+        "howtogeek",
+        "techrepublic",
+        "codeopolis",
+        "technoyard",
+        "techreviews",
+        "simplilearn",
+        "linuxize",
+        "cyberciti",
+        "savvyit",
+        "sitepoint",
+        "phoenixnap",
+        "devconnected",
+        "wpdiaries",
     ];
     spam_list.iter().any(|e| url.contains(e))
 }

@@ -1,4 +1,7 @@
-use std::{collections::HashMap, net::SocketAddr};
+use std::{
+    collections::{HashMap, HashSet},
+    net::SocketAddr,
+};
 
 use async_stream::stream;
 use axum::{
@@ -13,6 +16,8 @@ use html_escape::{encode_text, encode_unquoted_attribute};
 use crate::engines::{
     self, Engine, EngineProgressUpdate, ProgressUpdateData, Response, SearchQuery,
 };
+
+use super::get_blocked_domains;
 
 fn render_beginning_of_html(query: &str) -> String {
     format!(
@@ -93,7 +98,7 @@ fn render_featured_snippet(featured_snippet: &engines::FeaturedSnippet) -> Strin
     )
 }
 
-fn render_results(response: Response) -> String {
+fn render_results(response: Response, blocked_domains: &HashSet<String>) -> String {
     let mut html = String::new();
     if let Some(infobox) = response.infobox {
         html.push_str(&format!(
@@ -114,6 +119,13 @@ fn render_results(response: Response) -> String {
         html.push_str(&render_featured_snippet(&featured_snippet));
     }
     for result in &response.search_results {
+        if let Ok(url) = result.url.parse::<url::Url>() {
+            if let Some(domain) = url.domain() {
+                if blocked_domains.contains(domain) {
+                    continue;
+                }
+            }
+        }
         html.push_str(&render_search_result(result));
     }
     html
@@ -136,9 +148,12 @@ fn render_engine_progress_update(
 
 pub async fn route(
     Query(params): Query<HashMap<String, String>>,
+    cookies: axum_extra::extract::CookieJar,
     headers: HeaderMap,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
 ) -> impl IntoResponse {
+    let blocked_domains = get_blocked_domains::<HashSet<_>>(&cookies);
+
     let query = params
         .get("q")
         .cloned()
@@ -210,7 +225,7 @@ pub async fn route(
 
                     second_part.push_str("</div>"); // close progress-updates
                     second_part.push_str("<style>.progress-updates{display:none}</style>");
-                    second_part.push_str(&render_results(results));
+                    second_part.push_str(&render_results(results, &blocked_domains));
                     yield Ok(Bytes::from(second_part));
                 },
                 ProgressUpdateData::PostSearchInfobox(infobox) => {
