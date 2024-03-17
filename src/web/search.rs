@@ -34,8 +34,8 @@ fn render_beginning_of_html(query: &str, include_scholarly: bool) -> String {
 <body>
     <div class="results-container">
     <main>
-    <a href="/"><img class="icon" src="/icons/house.svg"></a>
-    <a href="/settings"><img class="icon" src="/icons/gear.svg"></a>
+    <a class="icon-wrapper" href="/"><img class="icon" style="height:1.5em;" src="/icons/house.svg"> <span>Home</span></a>
+    <a class="icon-wrapper" href="/settings"><img class="icon" style="height:1.5em;" src="/icons/gear.svg"> <span>Settings</span></a>
     <hr />
     <form action="/search" method="get" enctype="application/x-www-form-urlencoded" class="search-form">
         <input type="checkbox" name="scholarly" name="search-scholarly-checkbox" id="scholarly-checkbox" {scholarly_toggle}>
