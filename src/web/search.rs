@@ -34,8 +34,14 @@ fn render_beginning_of_html(query: &str, include_scholarly: bool) -> String {
 <body>
     <div class="results-container">
     <main>
+    <a href="/"><img class="icon" src="/icons/house.svg"></a>
+    <a href="/settings"><img class="icon" src="/icons/gear.svg"></a>
+    <hr />
     <form action="/search" method="get" enctype="application/x-www-form-urlencoded" class="search-form">
-        <input type="checkbox" name="scholarly" name="search-scholarly-checkbox" {scholarly_toggle}>
+        <input type="checkbox" name="scholarly" name="search-scholarly-checkbox" id="scholarly-checkbox" {scholarly_toggle}>
+        <label for="scholarly-checkbox" class="scholarly-checkbox-label">
+            <img src="/icons/graduation_cap.svg" class="scholarly-checkbox-image">
+        </label>
         <input type="text" name="q" placeholder="Search" value="{}" id="search-input" autofocus onfocus="this.select()" autocomplete="off">
         <input type="submit" value="Search">
     </form>

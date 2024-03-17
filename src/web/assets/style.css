@@ -92,6 +92,7 @@ h1 {
   position: absolute;
   text-align: left;
   margin-top: calc(1.9em + 1px);
+  margin-left: calc(3em + 2px);
   background: #0f131a;
   padding: 0.1em 0 0.3em 0;
   border: 1px solid #234;
@@ -281,4 +282,27 @@ h1 {
 }
 .postsearch-infobox p {
   margin-bottom: 1em;
+}
+
+/* scholarly toggle */
+#scholarly-checkbox {
+  display: none;
+}
+.scholarly-checkbox-image {
+  display: inline-block;
+  height: 2em;
+  filter: inherit;
+  cursor: pointer;
+}
+.scholarly-checkbox-label {
+  filter: none;
+}
+#scholarly-checkbox:checked + .scholarly-checkbox-label {
+  filter: invert(41%) sepia(96%) saturate(3095%) hue-rotate(232deg) brightness(99%) contrast(111%);
+}
+
+.icon {
+  height: 2em;
+  filter: grayscale(100%) invert(100%) brightness(60%);
+  display: inline-block;
 }

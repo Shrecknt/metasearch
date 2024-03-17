@@ -56,6 +56,33 @@ pub async fn run() {
                 )
             }),
         )
+        .route(
+            "/icons/graduation_cap.svg",
+            get(|| async {
+                (
+                    [(header::CONTENT_TYPE, "image/svg+xml")],
+                    include_str!("assets/icons/graduation_cap.svg"),
+                )
+            }),
+        )
+        .route(
+            "/icons/gear.svg",
+            get(|| async {
+                (
+                    [(header::CONTENT_TYPE, "image/svg+xml")],
+                    include_str!("assets/icons/gear.svg"),
+                )
+            }),
+        )
+        .route(
+            "/icons/house.svg",
+            get(|| async {
+                (
+                    [(header::CONTENT_TYPE, "image/svg+xml")],
+                    include_str!("assets/icons/house.svg"),
+                )
+            }),
+        )
         .route("/settings", get(settings::route))
         .route("/block_site", get(settings::block_route))
         .route("/unblock_site", get(settings::unblock_route))

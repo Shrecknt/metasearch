@@ -10,10 +10,14 @@
     <link rel="search" type="application/opensearchdescription+xml" title="metasearch" href="/opensearch.xml"/>
 </head>
 <body>
+    <a href="/settings" style="position:absolute;top:8px;left:8px;"><img class="icon" src="/icons/gear.svg"></a>
     <div class="main-container">
         <h1>metasearch</h1>
         <form action="/search" method="get" enctype="application/x-www-form-urlencoded" class="search-form">
-            <input type="checkbox" name="scholarly" name="search-scholarly-checkbox">
+            <input type="checkbox" name="scholarly" name="search-scholarly-checkbox" id="scholarly-checkbox">
+            <label for="scholarly-checkbox" class="scholarly-checkbox-label">
+                <img src="/icons/graduation_cap.svg" class="scholarly-checkbox-image">
+            </label>
             <input type="text" name="q" placeholder="Search" id="search-input" autofocus onfocus="this.select()" autocomplete="off">
             <input type="submit" value="Search">
         </form>
