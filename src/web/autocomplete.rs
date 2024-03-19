@@ -10,6 +10,11 @@ pub async fn route(Query(params): Query<HashMap<String, String>>) -> impl IntoRe
         .cloned()
         .unwrap_or_default()
         .replace('\n', " ");
+    let query = if rustrict::CensorStr::is_inappropriate(query.as_str()) {
+        rustrict::CensorStr::censor(query.as_str())
+    } else {
+        query
+    };
 
     let res = match engines::autocomplete(&query).await {
         Ok(res) => res,

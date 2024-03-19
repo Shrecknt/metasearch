@@ -8,7 +8,7 @@ use axum::{
     body::Body,
     extract::{ConnectInfo, Query},
     http::{header, HeaderMap, StatusCode},
-    response::IntoResponse,
+    response::{IntoResponse, Redirect},
 };
 use bytes::Bytes;
 use html_escape::{encode_text, encode_unquoted_attribute};
@@ -172,10 +172,17 @@ pub async fn route(
     cookies: axum_extra::extract::CookieJar,
     headers: HeaderMap,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, impl IntoResponse> {
     let blocked_domains = get_blocked_domains::<HashSet<_>>(&cookies);
 
     let include_scholarly = params.get("scholarly").map(|v| v.to_lowercase()) == Some("on".into());
+
+    let ip = headers
+        // this could be exploited under some setups, but the ip is only used for the
+        // "what is my ip" answer so it doesn't really matter
+        .get(std::env::var("IP_HEADER").unwrap_or("x-forwarded-for".into()))
+        .map(|ip| ip.to_str().unwrap_or_default().to_string())
+        .unwrap_or_else(|| addr.ip().to_string());
 
     let query = params
         .get("q")
@@ -183,16 +190,19 @@ pub async fn route(
         .unwrap_or_default()
         .trim()
         .replace('\n', " ");
+    if rustrict::CensorStr::is_inappropriate(query.as_str()) {
+        return Err(Redirect::to("https://youtu.be/dQw4w9WgXcQ"));
+    }
     if query.is_empty() {
         // redirect to index
-        return (
+        return Ok((
             StatusCode::FOUND,
             [
                 (header::LOCATION, "/"),
                 (header::CONTENT_TYPE, "text/html; charset=utf-8"),
             ],
             Body::from("<a href=\"/\">No query provided, click here to go back to index</a>"),
-        );
+        ));
     }
 
     let query = SearchQuery {
@@ -207,12 +217,7 @@ pub async fn route(
                 )
             })
             .collect(),
-        ip: headers
-            // this could be exploited under some setups, but the ip is only used for the
-            // "what is my ip" answer so it doesn't really matter
-            .get("x-forwarded-for")
-            .map(|ip| ip.to_str().unwrap_or_default().to_string())
-            .unwrap_or_else(|| addr.ip().to_string()),
+        ip,
     };
 
     let s = stream! {
@@ -278,12 +283,12 @@ pub async fn route(
 
     let stream = Body::from_stream(s);
 
-    (
+    Ok((
         StatusCode::OK,
         [
             (header::CONTENT_TYPE, "text/html; charset=utf-8"),
             (header::TRANSFER_ENCODING, "chunked"),
         ],
         stream,
-    )
+    ))
 }
