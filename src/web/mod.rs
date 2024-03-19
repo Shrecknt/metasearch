@@ -90,7 +90,7 @@ pub async fn run() {
         .route("/search", get(search::route))
         .route("/autocomplete", get(autocomplete::route));
 
-    println!("Listening on {BIND_ADDRESS}");
+    log::info!("Listening on {BIND_ADDRESS}");
 
     let listener = tokio::net::TcpListener::bind(BIND_ADDRESS).await.unwrap();
     axum::serve(

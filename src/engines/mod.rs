@@ -297,8 +297,8 @@ pub async fn search_with_engines(
 
                     let response = match engine.parse_response(&http_response) {
                         Ok(response) => response,
-                        Err(e) => {
-                            eprintln!("parse error: {}", e);
+                        Err(err) => {
+                            log::error!("Parse error for '{}': {}", query.query, err);
                             EngineResponse::new()
                         }
                     };
@@ -357,8 +357,8 @@ pub async fn search_with_engines(
                             let http_response = HttpResponse { res, body };
                             engine.postsearch_parse_response(&http_response)
                         }
-                        Err(e) => {
-                            eprintln!("postsearch request error: {}", e);
+                        Err(err) => {
+                            log::error!("Postsearch request error for '{}': {}", query.query, err);
                             None
                         }
                     };

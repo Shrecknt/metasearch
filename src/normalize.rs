@@ -7,7 +7,7 @@ pub fn normalize_url(url: &str) -> eyre::Result<String> {
     }
 
     let Ok(mut url) = Url::parse(url) else {
-        eprintln!("failed to parse url: {url}");
+        log::warn!("Failed to parse url: {url}");
         return Ok(url.to_string());
     };
 
@@ -53,10 +53,9 @@ pub fn normalize_url(url: &str) -> eyre::Result<String> {
                 url.set_host(Some("minecraft.wiki")).unwrap();
                 url.set_path(&format!("/w/{path}"));
             }
-        },
+        }
         Some(_) => (),
-        None => ()
-
+        None => (),
     }
 
     // url decode and encode path

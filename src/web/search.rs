@@ -178,8 +178,6 @@ pub async fn route(
     let include_scholarly = params.get("scholarly").map(|v| v.to_lowercase()) == Some("on".into());
 
     let ip = headers
-        // this could be exploited under some setups, but the ip is only used for the
-        // "what is my ip" answer so it doesn't really matter
         .get(std::env::var("IP_HEADER").unwrap_or("x-forwarded-for".into()))
         .map(|ip| ip.to_str().unwrap_or_default().to_string())
         .unwrap_or_else(|| addr.ip().to_string());
@@ -190,6 +188,9 @@ pub async fn route(
         .unwrap_or_default()
         .trim()
         .replace('\n', " ");
+
+    log::info!("Search request from {ip} for '{query}'");
+
     if rustrict::CensorStr::is_inappropriate(query.as_str()) {
         return Err(Redirect::to("https://youtu.be/dQw4w9WgXcQ"));
     }

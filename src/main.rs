@@ -5,6 +5,8 @@ pub mod web;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
+    simple_logger::init_with_level(log::Level::Info).unwrap();
+
     unsafe {
         const ADDITIONAL_PROFANE_WORDS: &[&str] =
             &["furry", "bomb", "kill", "murder", "nsfw", "dox"];
