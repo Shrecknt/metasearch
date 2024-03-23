@@ -58,7 +58,7 @@ pub async fn block_route(
     blocked_domains.insert(to_block.into());
     Ok((
         [(header::SET_COOKIE, set_blocked_domains(blocked_domains))],
-        Redirect::to(&return_url),
+        Redirect::to(return_url),
     ))
 }
 
@@ -82,6 +82,6 @@ pub async fn unblock_route(
     blocked_domains.remove(to_unblock);
     Ok((
         [(header::SET_COOKIE, set_blocked_domains(blocked_domains))],
-        Redirect::to(&return_url),
+        Redirect::to(return_url),
     ))
 }

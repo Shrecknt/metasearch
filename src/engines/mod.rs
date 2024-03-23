@@ -528,16 +528,14 @@ fn merge_engine_responses(responses: HashMap<Engine, EngineResponse>) -> Respons
 
                 existing_result.engines.insert(engine);
                 existing_result.score += result_score;
-            } else {
-                if !filter_spam(&search_result.url) {
-                    search_results.push(SearchResult {
-                        url: search_result.url,
-                        title: search_result.title,
-                        description: search_result.description,
-                        engines: [engine].iter().cloned().collect(),
-                        score: result_score,
-                    });
-                }
+            } else if !filter_spam(&search_result.url) {
+                search_results.push(SearchResult {
+                    url: search_result.url,
+                    title: search_result.title,
+                    description: search_result.description,
+                    engines: [engine].iter().cloned().collect(),
+                    score: result_score,
+                });
             }
         }
 
