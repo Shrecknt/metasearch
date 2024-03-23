@@ -41,6 +41,7 @@ engines! {
     StackExchange = "stackexchange",
     GitHub = "github",
     DocsRs = "docs.rs",
+    UrbanDictionary = "urban dictionary"
 }
 
 engine_weights! {
@@ -87,6 +88,7 @@ engine_postsearch_requests! {
     StackExchange => postsearch::stackexchange::request, parse_response,
     GitHub => postsearch::github::request, parse_response,
     DocsRs => postsearch::docs_rs::request, parse_response,
+    UrbanDictionary => postsearch::urbandictionary::request, parse_response,
 }
 
 impl fmt::Display for Engine {

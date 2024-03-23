@@ -5,3 +5,4 @@
 pub mod docs_rs;
 pub mod github;
 pub mod stackexchange;
+pub mod urbandictionary;
