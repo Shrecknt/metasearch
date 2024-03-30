@@ -2,6 +2,7 @@ pub mod calc;
 pub mod dictionary;
 pub mod ip;
 pub mod notepad;
+pub mod random;
 pub mod timezone;
 pub mod useragent;
 pub mod wikipedia;

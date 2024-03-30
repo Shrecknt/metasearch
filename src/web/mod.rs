@@ -86,6 +86,7 @@ pub async fn run() {
         .route("/settings", get(settings::route))
         .route("/block_site", get(settings::block_route))
         .route("/unblock_site", get(settings::unblock_route))
+        .route("/rand_noscript", get(crate::engines::answer::random::route))
         .route("/opensearch.xml", get(opensearch::route))
         .route("/search", get(search::route))
         .route("/autocomplete", get(autocomplete::route));

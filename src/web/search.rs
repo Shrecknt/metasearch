@@ -54,7 +54,7 @@ fn render_beginning_of_html(query: &str, include_scholarly: bool) -> String {
 }
 
 fn render_end_of_html() -> String {
-    r#"</main></div></body></html>"#.to_string()
+    "</main></div></body></html>".to_string()
 }
 
 fn render_engine_list(engines: &[engines::Engine]) -> String {
@@ -179,8 +179,10 @@ pub async fn route(
 
     let ip = headers
         .get(std::env::var("IP_HEADER").unwrap_or("x-forwarded-for".into()))
-        .map(|ip| ip.to_str().unwrap_or_default().to_string())
-        .unwrap_or_else(|| addr.ip().to_string());
+        .map_or_else(
+            || addr.ip().to_string(),
+            |ip| ip.to_str().unwrap_or_default().to_string(),
+        );
 
     let query = params
         .get("q")
@@ -188,6 +190,10 @@ pub async fn route(
         .unwrap_or_default()
         .trim()
         .replace('\n', " ");
+
+    if query.contains('\u{001b}') {
+        return Err(Redirect::to("https://youtu.be/dQw4w9WgXcQ"));
+    }
 
     log::info!("Search request from {ip} for '{query}'");
 

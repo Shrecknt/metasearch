@@ -45,12 +45,14 @@ pub async fn block_route(
     let Some(to_block) = params.get("domain") else {
         return Err((
             StatusCode::BAD_REQUEST,
+            [(header::CONTENT_TYPE, "text/plain")],
             Body::from(format!("missing `domain` param\nparams:\n{params:?}")),
         ));
     };
     let Some(return_url) = params.get("return") else {
         return Err((
             StatusCode::BAD_REQUEST,
+            [(header::CONTENT_TYPE, "text/plain")],
             Body::from(format!("missing `return` param\nparams:\n{params:?}")),
         ));
     };
@@ -69,12 +71,14 @@ pub async fn unblock_route(
     let Some(to_unblock) = params.get("domain") else {
         return Err((
             StatusCode::BAD_REQUEST,
+            [(header::CONTENT_TYPE, "text/plain")],
             Body::from(format!("missing `domain` param\nparams:\n{params:?}")),
         ));
     };
     let Some(return_url) = params.get("return") else {
         return Err((
             StatusCode::BAD_REQUEST,
+            [(header::CONTENT_TYPE, "text/plain")],
             Body::from(format!("missing `return` param\nparams:\n{params:?}")),
         ));
     };

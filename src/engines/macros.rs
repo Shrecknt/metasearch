@@ -7,10 +7,12 @@ macro_rules! engines {
         }
 
         impl Engine {
+            #[must_use]
             pub fn all() -> &'static [Engine] {
                 &[$(Engine::$engine,)*]
             }
 
+            #[must_use]
             pub fn id(&self) -> &'static str {
                 match self {
                     $(Engine::$engine => $id,)*
@@ -24,6 +26,7 @@ macro_rules! engines {
 macro_rules! engine_weights {
     ($($engine:ident = $weight:expr),* $(,)?) => {
         impl Engine {
+            #[must_use]
             pub fn weight(&self) -> f64 {
                 match self {
                     $(Engine::$engine => $weight,)*
@@ -38,6 +41,7 @@ macro_rules! engine_weights {
 macro_rules! engine_scholarly {
     ($($engine:ident = $is_scholarly:expr),* $(,)?) => {
         impl Engine {
+            #[must_use]
             pub fn is_scholarly(&self) -> bool {
                 match self {
                     $(Engine::$engine => $is_scholarly,)*
@@ -62,6 +66,7 @@ macro_rules! engine_parse_response {
 macro_rules! engine_requests {
     ($($engine:ident => $module:ident::$engine_id:ident::$request:ident, $parse_response:ident),* $(,)?) => {
         impl Engine {
+            #[must_use]
             pub fn request(&self, query: &SearchQuery) -> RequestResponse {
                 #[allow(clippy::useless_conversion)]
                 match self {
@@ -90,6 +95,7 @@ macro_rules! engine_requests {
 macro_rules! engine_autocomplete_requests {
     ($($engine:ident => $module:ident::$engine_id:ident::$request:ident, $parse_response:ident),* $(,)?) => {
         impl Engine {
+            #[must_use]
             pub fn request_autocomplete(&self, query: &str) -> Option<RequestAutocompleteResponse> {
                 match self {
                     $(
@@ -116,6 +122,7 @@ macro_rules! engine_autocomplete_requests {
 macro_rules! engine_postsearch_requests {
     ($($engine:ident => $module:ident::$engine_id:ident::$request:ident, $parse_response:ident),* $(,)?) => {
         impl Engine {
+            #[must_use]
             pub fn postsearch_request(&self, response: &Response) -> Option<reqwest::RequestBuilder> {
                 match self {
                     $(
@@ -125,6 +132,7 @@ macro_rules! engine_postsearch_requests {
                 }
             }
 
+            #[must_use]
             pub fn postsearch_parse_response(&self, res: &HttpResponse) -> Option<String> {
                 match self {
                     $(

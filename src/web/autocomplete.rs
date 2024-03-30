@@ -25,6 +25,13 @@ pub async fn route(
         .unwrap_or_default()
         .replace('\n', " ");
 
+    if query.contains('\u{001b}') {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json((query.replace('\u{001b}', ""), vec![])),
+        );
+    }
+
     log::info!("Autocomplete request from {ip} for '{query}'");
 
     let query = if rustrict::CensorStr::is_inappropriate(query.as_str()) {

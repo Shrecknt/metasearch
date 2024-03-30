@@ -37,6 +37,7 @@ engines! {
     Dictionary = "dictionary",
     Timezone = "timezone",
     Notepad = "notepad",
+    Random = "random",
     // post-search
     StackExchange = "stackexchange",
     GitHub = "github",
@@ -77,6 +78,7 @@ engine_requests! {
     Dictionary => answer::dictionary::request, parse_response,
     Timezone => answer::timezone::request, None,
     Notepad => answer::notepad::request, None,
+    Random => answer::random::request, None,
 }
 
 engine_autocomplete_requests! {
@@ -182,10 +184,12 @@ pub struct EngineResponse {
 }
 
 impl EngineResponse {
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
+    #[must_use]
     pub fn answer_html(html: String) -> Self {
         Self {
             answer_html: Some(html),
@@ -193,6 +197,7 @@ impl EngineResponse {
         }
     }
 
+    #[must_use]
     pub fn infobox_html(html: String) -> Self {
         Self {
             infobox_html: Some(html),
@@ -227,6 +232,7 @@ pub struct ProgressUpdate {
 }
 
 impl ProgressUpdate {
+    #[must_use]
     pub fn new(data: ProgressUpdateData, start_time: Instant) -> Self {
         Self {
             data,
@@ -300,7 +306,7 @@ pub async fn search_with_engines(
                     let response = match engine.parse_response(&http_response) {
                         Ok(response) => response,
                         Err(err) => {
-                            log::error!("Parse error for '{}': {}", query.query, err);
+                            log::error!("Parse error for '{}': {err}", query.query);
                             EngineResponse::new()
                         }
                     };
@@ -360,7 +366,7 @@ pub async fn search_with_engines(
                             engine.postsearch_parse_response(&http_response)
                         }
                         Err(err) => {
-                            log::error!("Postsearch request error for '{}': {}", query.query, err);
+                            log::error!("Postsearch request error for '{}': {err}", query.query);
                             None
                         }
                     };
@@ -533,7 +539,7 @@ fn merge_engine_responses(responses: HashMap<Engine, EngineResponse>) -> Respons
                     url: search_result.url,
                     title: search_result.title,
                     description: search_result.description,
-                    engines: [engine].iter().cloned().collect(),
+                    engines: [engine].iter().copied().collect(),
                     score: result_score,
                 });
             }
@@ -541,10 +547,8 @@ fn merge_engine_responses(responses: HashMap<Engine, EngineResponse>) -> Respons
 
         if let Some(engine_featured_snippet) = response.featured_snippet {
             // if it has a higher weight than the current featured snippet
-            let featured_snippet_weight = featured_snippet
-                .as_ref()
-                .map(|s| s.engine.weight())
-                .unwrap_or(0.);
+            let featured_snippet_weight =
+                featured_snippet.as_ref().map_or(0., |s| s.engine.weight());
             if engine.weight() > featured_snippet_weight {
                 featured_snippet = Some(FeaturedSnippet {
                     url: engine_featured_snippet.url,
@@ -557,7 +561,7 @@ fn merge_engine_responses(responses: HashMap<Engine, EngineResponse>) -> Respons
 
         if let Some(engine_answer_html) = response.answer_html {
             // if it has a higher weight than the current answer
-            let answer_weight = answer.as_ref().map(|s| s.engine.weight()).unwrap_or(0.);
+            let answer_weight = answer.as_ref().map_or(0., |s| s.engine.weight());
             if engine.weight() > answer_weight {
                 answer = Some(Answer {
                     html: engine_answer_html,
@@ -568,7 +572,7 @@ fn merge_engine_responses(responses: HashMap<Engine, EngineResponse>) -> Respons
 
         if let Some(engine_infobox_html) = response.infobox_html {
             // if it has a higher weight than the current infobox
-            let infobox_weight = infobox.as_ref().map(|s| s.engine.weight()).unwrap_or(0.);
+            let infobox_weight = infobox.as_ref().map_or(0., |s| s.engine.weight());
             if engine.weight() > infobox_weight {
                 infobox = Some(Infobox {
                     html: engine_infobox_html,
