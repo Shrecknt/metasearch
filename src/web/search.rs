@@ -13,8 +13,9 @@ use axum::{
 use bytes::Bytes;
 use html_escape::{encode_text, encode_unquoted_attribute};
 
-use crate::engines::{
-    self, Engine, EngineProgressUpdate, ProgressUpdateData, Response, SearchQuery,
+use crate::{
+    engines::{self, Engine, EngineProgressUpdate, ProgressUpdateData, Response, SearchQuery},
+    web::DISALLOWED_CHARACTERS,
 };
 
 use super::get_blocked_domains;
@@ -191,7 +192,10 @@ pub async fn route(
         .trim()
         .replace('\n', " ");
 
-    if query.contains('\u{001b}') {
+    if DISALLOWED_CHARACTERS
+        .iter()
+        .any(|char| query.contains(*char))
+    {
         return Err(Redirect::to("https://youtu.be/dQw4w9WgXcQ"));
     }
 

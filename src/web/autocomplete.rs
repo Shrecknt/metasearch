@@ -7,7 +7,7 @@ use axum::{
     Json,
 };
 
-use crate::engines;
+use crate::{engines, web::DISALLOWED_CHARACTERS};
 
 pub async fn route(
     Query(params): Query<HashMap<String, String>>,
@@ -25,7 +25,10 @@ pub async fn route(
         .unwrap_or_default()
         .replace('\n', " ");
 
-    if query.contains('\u{001b}') {
+    if DISALLOWED_CHARACTERS
+        .iter()
+        .any(|char| query.contains(*char))
+    {
         return (
             StatusCode::BAD_REQUEST,
             Json((query.replace('\u{001b}', ""), vec![])),

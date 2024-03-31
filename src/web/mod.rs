@@ -9,6 +9,10 @@ use axum::{http::header, routing::get, Router};
 
 pub const BIND_ADDRESS: &str = "0.0.0.0:28019";
 
+pub const DISALLOWED_CHARACTERS: &[char] = &[
+    '\u{0007}', '\u{0008}', '\u{001b}', '\u{000c}', '\u{000a}', '\u{000d}', '\u{0009}', '\u{000b}',
+];
+
 pub async fn run() {
     let app = Router::new()
         .route(
