@@ -39,7 +39,7 @@ fn render_beginning_of_html(query: &str, include_scholarly: bool) -> String {
     <a class="icon-wrapper" href="/settings"><img class="icon" style="height:1.5em;" src="/icons/gear.svg"> <span>Settings</span></a>
     <hr />
     <form action="/search" method="get" enctype="application/x-www-form-urlencoded" class="search-form">
-        <input type="checkbox" name="scholarly" name="search-scholarly-checkbox" id="scholarly-checkbox" {scholarly_toggle}>
+        <input type="checkbox" name="scholarly" id="scholarly-checkbox" {scholarly_toggle}>
         <label for="scholarly-checkbox" class="scholarly-checkbox-label">
             <img src="/icons/graduation_cap.svg" class="scholarly-checkbox-image">
         </label>
