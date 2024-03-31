@@ -30,6 +30,8 @@ engines! {
     Marginalia = "marginalia",
     GoogleScholar = "scholar",
     Stract = "stract",
+    Rightdao = "rightdao",
+    Yep = "yep",
     // answer
     Useragent = "useragent",
     Ip = "ip",
@@ -53,6 +55,8 @@ engine_weights! {
     Brave = 1.25,
     Marginalia = 0.15,
     Stract = 0.15,
+    Rightdao = 0.10,
+    Yep = 0.10,
     // defaults to 1.0
 }
 
@@ -63,6 +67,8 @@ engine_scholarly! {
     Brave = false,
     Marginalia = false,
     Stract = false,
+    Rightdao = false,
+    Yep = false,
     // defaults to false
 }
 
@@ -74,6 +80,8 @@ engine_requests! {
     Brave => search::brave::request, parse_response,
     Marginalia => search::marginalia::request, parse_response,
     Stract => search::stract::request, parse_response,
+    Rightdao => search::rightdao::request, parse_response,
+    Yep => search::yep::request, parse_response,
     // answer
     Useragent => answer::useragent::request, None,
     Ip => answer::ip::request, None,
@@ -602,7 +610,7 @@ pub struct AutocompleteResult {
 }
 
 fn filter_spam(url: &str) -> bool {
-    let spam_list = vec![
+    const SPAM_LIST: &[&str] = &[
         "forgeeks",
         "quora",
         "yahoo",
@@ -631,7 +639,7 @@ fn filter_spam(url: &str) -> bool {
         "devconnected",
         "wpdiaries",
     ];
-    spam_list.iter().any(|e| url.contains(e))
+    SPAM_LIST.iter().any(|e| url.contains(e))
 }
 
 fn merge_autocomplete_responses(responses: HashMap<Engine, Vec<String>>) -> Vec<String> {
