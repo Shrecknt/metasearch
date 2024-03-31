@@ -114,7 +114,8 @@ fn render_featured_snippet(featured_snippet: &engines::FeaturedSnippet) -> Strin
 
 fn render_results(response: Response, blocked_domains: &HashSet<String>) -> String {
     let mut html = String::new();
-    if let Some(infobox) = response.infobox {
+
+    if let Some(infobox) = &response.infobox {
         html.push_str(&format!(
             r#"<div class="infobox">{infobox_html}{engines_html}</div>"#,
             infobox_html = &infobox.html,
@@ -122,16 +123,18 @@ fn render_results(response: Response, blocked_domains: &HashSet<String>) -> Stri
         ));
     }
 
-    if let Some(answer) = response.answer {
+    if let Some(answer) = &response.answer {
         html.push_str(&format!(
             r#"<div class="answer">{answer_html}{engines_html}</div>"#,
             answer_html = &answer.html,
             engines_html = render_engine_list(&[answer.engine])
         ));
     }
-    if let Some(featured_snippet) = response.featured_snippet {
+
+    if let Some(featured_snippet) = &response.featured_snippet {
         html.push_str(&render_featured_snippet(&featured_snippet));
     }
+
     for result in &response.search_results {
         if let Ok(url) = result.url.parse::<url::Url>() {
             if let Some(domain) = url.domain() {
@@ -147,6 +150,15 @@ fn render_results(response: Response, blocked_domains: &HashSet<String>) -> Stri
         }
         html.push_str(&render_search_result(result));
     }
+
+    if response.infobox.is_none()
+        && response.answer.is_none()
+        && response.featured_snippet.is_none()
+        && response.search_results.is_empty()
+    {
+        html.push_str(r#"<p>No results.</p>"#);
+    }
+
     html
 }
 
