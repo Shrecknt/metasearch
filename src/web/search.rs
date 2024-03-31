@@ -122,7 +122,6 @@ fn render_results(response: Response, blocked_domains: &HashSet<String>) -> Stri
             engines_html = render_engine_list(&[infobox.engine])
         ));
     }
-
     if let Some(answer) = &response.answer {
         html.push_str(&format!(
             r#"<div class="answer">{answer_html}{engines_html}</div>"#,
