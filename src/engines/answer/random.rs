@@ -12,7 +12,7 @@ pub fn request(query: &SearchQuery) -> EngineResponse {
         return EngineResponse::new();
     }
 
-    EngineResponse::answer_html(format!(
+    EngineResponse::answer_html(
         r#"<h3>random number generator</h3>
 <div id="random-container">
     <style>
@@ -26,19 +26,18 @@ pub fn request(query: &SearchQuery) -> EngineResponse {
     </style>
     <iframe id="random-iframe" src="/rand_noscript"></iframe>
 </div>"#
-    ))
+            .to_string(),
+    )
 }
 
 pub async fn route(Query(params): Query<HashMap<String, String>>) -> impl IntoResponse {
     let min = params
         .get("min")
-        .map(|v| v.parse::<i64>().ok())
-        .flatten()
+        .and_then(|v| v.parse::<i64>().ok())
         .unwrap_or(1);
     let max = params
         .get("max")
-        .map(|v| v.parse::<i64>().ok())
-        .flatten()
+        .and_then(|v| v.parse::<i64>().ok())
         .unwrap_or(10);
 
     const METASEARCH_PREMIUM_PROMPT: &str = "<span style='font-size:0.25em;line-height:1.5em;display:block;'>metasearch premium allows generating random numbers up to 20 digits!</span>";

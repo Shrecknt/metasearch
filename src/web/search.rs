@@ -132,7 +132,7 @@ fn render_results(response: Response, blocked_domains: &HashSet<String>) -> Stri
     }
 
     if let Some(featured_snippet) = &response.featured_snippet {
-        html.push_str(&render_featured_snippet(&featured_snippet));
+        html.push_str(&render_featured_snippet(featured_snippet));
     }
 
     for result in &response.search_results {
