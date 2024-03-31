@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use axum::{
     body::Body,
@@ -8,9 +8,30 @@ use axum::{
 };
 use html_escape::encode_single_quoted_attribute;
 
-use super::{get_blocked_domains, set_blocked_domains};
+use crate::engines::Engine;
+
+use super::{
+    get_blocked_domains, get_enabled_search_engines, set_blocked_domains,
+    set_enabled_search_engines,
+};
 
 pub async fn route(cookies: axum_extra::extract::cookie::CookieJar) -> impl IntoResponse {
+    let enabled_search_engines = get_enabled_search_engines(&cookies);
+    let search_engines = enabled_search_engines
+        .iter()
+        .map(|(engine, enabled)| {
+            let engine_proper = match Engine::from_id(&engine) {
+                Some(engine) => engine.id_proper(),
+                None => "",
+            };
+            let is_checked = if *enabled { "checked" } else { "" };
+            let checkbox =
+                format!("<input type='checkbox' id='{engine}' name='{engine}' {is_checked} />");
+            let name_label = format!("<label for='{engine}'>{engine_proper}</label>");
+            format!("<tr><td class='engine-checkbox'>{checkbox}</td><td class='engine-label'>{name_label}</td></tr>")
+        })
+        .collect::<Vec<_>>();
+
     let blocked_domains = get_blocked_domains::<BTreeSet<_>>(&cookies);
     let sanitized_blocked_domains = blocked_domains
         .iter()
@@ -33,6 +54,7 @@ pub async fn route(cookies: axum_extra::extract::cookie::CookieJar) -> impl Into
         [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
         Body::from(
             include_str!("assets/settings.html")
+                .replace("%search-engines%", &search_engines.join(""))
                 .replace("%blocked-sites%", &sanitized_blocked_domains.join("")),
         ),
     )
@@ -86,6 +108,35 @@ pub async fn unblock_route(
     blocked_domains.remove(to_unblock);
     Ok((
         [(header::SET_COOKIE, set_blocked_domains(blocked_domains))],
+        Redirect::to(return_url),
+    ))
+}
+
+pub async fn search_engines_route(
+    Query(params): Query<HashMap<String, String>>,
+) -> Result<impl IntoResponse, impl IntoResponse> {
+    let Some(return_url) = params.get("return") else {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            [(header::CONTENT_TYPE, "text/plain")],
+            Body::from(format!("missing `return` param\nparams:\n{params:?}")),
+        ));
+    };
+    let mut enabled_search_engines = Engine::all()
+        .iter()
+        .map(|engine| (engine.id().to_string(), false))
+        .collect::<BTreeMap<_, _>>();
+    for (param, enabled) in &params {
+        let enabled = enabled == "on";
+        if let Some(value) = enabled_search_engines.get_mut(param) {
+            *value = enabled;
+        }
+    }
+    Ok((
+        [(
+            header::SET_COOKIE,
+            set_enabled_search_engines(&enabled_search_engines),
+        )],
         Redirect::to(return_url),
     ))
 }

@@ -3,9 +3,11 @@ pub mod opensearch;
 pub mod search;
 pub mod settings;
 
-use std::net::SocketAddr;
+use std::{collections::BTreeMap, net::SocketAddr};
 
 use axum::{http::header, routing::get, Router};
+
+use crate::engines::Engine;
 
 pub const BIND_ADDRESS: &str = "0.0.0.0:28019";
 
@@ -90,6 +92,7 @@ pub async fn run() {
         .route("/settings", get(settings::route))
         .route("/block_site", get(settings::block_route))
         .route("/unblock_site", get(settings::unblock_route))
+        .route("/set_search_engines", get(settings::search_engines_route))
         .route("/rand_noscript", get(crate::engines::answer::random::route))
         .route("/opensearch.xml", get(opensearch::route))
         .route("/search", get(search::route))
@@ -104,6 +107,58 @@ pub async fn run() {
     )
     .await
     .unwrap();
+}
+
+pub fn get_enabled_search_engines(
+    cookies: &axum_extra::extract::cookie::CookieJar,
+) -> BTreeMap<String, bool> {
+    let engines = cookies
+        .get("engines")
+        .map(|cookie| {
+            let cookie_value = cookie.value();
+            let engines_base64 = {
+                use base64::prelude::*;
+                BASE64_STANDARD.decode(cookie_value).unwrap_or_default()
+            };
+            let engines_str = std::str::from_utf8(&engines_base64).unwrap_or_default();
+            engines_str
+                .split(',')
+                .map(|entry| entry.trim())
+                .filter(|entry| !entry.is_empty())
+                .map(|line| {
+                    let mut split = line.split('=');
+                    let key = split.next().unwrap_or_default();
+                    let value = split.next().unwrap_or_default() == "true";
+                    (key.to_string(), value)
+                })
+                .collect::<BTreeMap<String, bool>>()
+        })
+        .unwrap_or_default();
+    let mut res = BTreeMap::new();
+    for engine in Engine::all() {
+        let id = engine.id();
+        res.insert(
+            id.to_string(),
+            *engines.get(id).unwrap_or(&engine.is_enabled_by_default()),
+        );
+    }
+    res
+}
+
+pub fn set_enabled_search_engines(enabled_search_engines: &BTreeMap<String, bool>) -> String {
+    let mut first_iter = true;
+    let mut built_string = String::new();
+    for (engine, enabled) in enabled_search_engines.into_iter() {
+        if first_iter {
+            first_iter = false;
+        } else {
+            built_string.push(',');
+        }
+        built_string.push_str(&format!("{engine}={enabled}"));
+    }
+    use base64::prelude::*;
+    let blocked_domains_base64 = BASE64_STANDARD.encode(built_string);
+    format!("engines={blocked_domains_base64}")
 }
 
 pub fn get_blocked_domains<B>(cookies: &axum_extra::extract::cookie::CookieJar) -> B

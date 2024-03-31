@@ -7,7 +7,6 @@ pub fn request(response: &Response) -> Option<reqwest::RequestBuilder> {
         if regex!(r"^https:\/\/www\.urbandictionary\.com\/define\.php\?term=[\w\.\-\+]+$")
             .is_match(&search_result.url)
         {
-            log::info!("urban dictionary result: {}", search_result.url);
             return Some(CLIENT.get(search_result.url.as_str()));
         }
     }

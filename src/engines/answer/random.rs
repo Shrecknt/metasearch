@@ -16,13 +16,13 @@ pub fn request(query: &SearchQuery) -> EngineResponse {
         r#"<h3>random number generator</h3>
 <div id="random-container">
     <style>
-        #random-iframe {{
+        #random-iframe {
             width: calc( 100% - 16px );
             height: calc( 100% - 16px );
             margin: 8px;
             border: none;
             outline: none;
-        }}
+        }
     </style>
     <iframe id="random-iframe" src="/rand_noscript"></iframe>
 </div>"#

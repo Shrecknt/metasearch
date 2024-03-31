@@ -15,7 +15,7 @@ use html_escape::{encode_text, encode_unquoted_attribute};
 
 use crate::{
     engines::{self, Engine, EngineProgressUpdate, ProgressUpdateData, Response, SearchQuery},
-    web::DISALLOWED_CHARACTERS,
+    web::{get_enabled_search_engines, DISALLOWED_CHARACTERS},
 };
 
 use super::get_blocked_domains;
@@ -188,6 +188,7 @@ pub async fn route(
     let blocked_domains = get_blocked_domains::<HashSet<_>>(&cookies);
 
     let include_scholarly = params.get("scholarly").map(|v| v.to_lowercase()) == Some("on".into());
+    let enabled_engines = get_enabled_search_engines(&cookies);
 
     let ip = headers
         .get(std::env::var("IP_HEADER").unwrap_or("x-forwarded-for".into()))
@@ -259,7 +260,7 @@ pub async fn route(
 
         let (progress_tx, mut progress_rx) = tokio::sync::mpsc::unbounded_channel();
 
-        let search_future = tokio::spawn(async move { engines::search(query, include_scholarly, progress_tx).await });
+        let search_future = tokio::spawn(async move { engines::search(query, include_scholarly, enabled_engines, progress_tx).await });
 
         while let Some(progress_update) = progress_rx.recv().await {
             match progress_update.data {

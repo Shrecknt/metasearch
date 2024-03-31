@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeMap, BTreeSet, HashMap},
     fmt,
     net::IpAddr,
     ops::Deref,
@@ -14,8 +14,8 @@ use tokio::sync::mpsc;
 
 mod macros;
 use crate::{
-    engine_autocomplete_requests, engine_postsearch_requests, engine_requests, engine_scholarly,
-    engine_weights, engines,
+    engine_autocomplete_requests, engine_enabled, engine_postsearch_requests, engine_requests,
+    engine_scholarly, engine_weights, engines,
 };
 
 pub mod answer;
@@ -70,6 +70,18 @@ engine_scholarly! {
     Rightdao = false,
     Yep = false,
     // defaults to false
+}
+
+engine_enabled! {
+    Google = true,
+    GoogleScholar = true,
+    Bing = true,
+    Brave = true,
+    Marginalia = true,
+    Stract = false,
+    Rightdao = false,
+    Yep = false,
+    // defaults to true
 }
 
 engine_requests! {
@@ -257,13 +269,14 @@ pub async fn search_with_engines(
     engines: &[Engine],
     query: &SearchQuery,
     include_scholarly: bool,
+    enabled_engines: BTreeMap<String, bool>,
     progress_tx: mpsc::UnboundedSender<ProgressUpdate>,
 ) -> eyre::Result<()> {
     let start_time = Instant::now();
 
     let mut requests = Vec::new();
     for engine in engines {
-        if !include_scholarly && engine.is_scholarly() {
+        if (!include_scholarly && engine.is_scholarly()) || (!engine.is_enabled(&enabled_engines)) {
             let engine = *engine;
             progress_tx.send(ProgressUpdate::new(
                 ProgressUpdateData::Engine {
@@ -465,10 +478,18 @@ pub static CLIENT: Lazy<reqwest::Client> = Lazy::new(|| {
 pub async fn search(
     query: SearchQuery,
     include_scholarly: bool,
+    enabled_engines: BTreeMap<String, bool>,
     progress_tx: mpsc::UnboundedSender<ProgressUpdate>,
 ) -> eyre::Result<()> {
     let engines = Engine::all();
-    search_with_engines(engines, &query, include_scholarly, progress_tx).await
+    search_with_engines(
+        engines,
+        &query,
+        include_scholarly,
+        enabled_engines,
+        progress_tx,
+    )
+    .await
 }
 
 pub async fn autocomplete(query: &str) -> eyre::Result<Vec<String>> {

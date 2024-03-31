@@ -18,6 +18,21 @@ macro_rules! engines {
                     $(Engine::$engine => $id,)*
                 }
             }
+
+            #[must_use]
+            pub fn id_proper(&self) -> &'static str {
+                match self {
+                    $(Engine::$engine => stringify!($engine),)*
+                }
+            }
+
+            #[must_use]
+            pub fn from_id(id: &str) -> Option<Engine> {
+                match id {
+                    $($id => Some(Engine::$engine),)*
+                    _ => None
+                }
+            }
         }
     };
 }
@@ -46,6 +61,26 @@ macro_rules! engine_scholarly {
                 match self {
                     $(Engine::$engine => $is_scholarly,)*
                     _ => false,
+                }
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! engine_enabled {
+    ($($engine:ident = $is_enabled_by_default:expr),* $(,)?) => {
+        impl Engine {
+            #[must_use]
+            pub fn is_enabled(&self, enabled_engines: &std::collections::BTreeMap<String, bool>) -> bool {
+                *enabled_engines.get(self.id()).unwrap_or(&self.is_enabled_by_default())
+            }
+
+            #[must_use]
+            pub fn is_enabled_by_default(&self) -> bool {
+                match self {
+                    $(Engine::$engine => $is_enabled_by_default,)*
+                    _ => true,
                 }
             }
         }
