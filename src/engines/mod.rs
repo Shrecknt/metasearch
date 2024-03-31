@@ -29,6 +29,7 @@ engines! {
     Brave = "brave",
     Marginalia = "marginalia",
     GoogleScholar = "scholar",
+    Stract = "stract",
     // answer
     Useragent = "useragent",
     Ip = "ip",
@@ -51,6 +52,7 @@ engine_weights! {
     Bing = 1.0,
     Brave = 1.25,
     Marginalia = 0.15,
+    Stract = 0.15,
     // defaults to 1.0
 }
 
@@ -60,6 +62,7 @@ engine_scholarly! {
     Bing = false,
     Brave = false,
     Marginalia = false,
+    Stract = false,
     // defaults to false
 }
 
@@ -70,6 +73,7 @@ engine_requests! {
     Bing => search::bing::request, parse_response,
     Brave => search::brave::request, parse_response,
     Marginalia => search::marginalia::request, parse_response,
+    Stract => search::stract::request, parse_response,
     // answer
     Useragent => answer::useragent::request, None,
     Ip => answer::ip::request, None,
